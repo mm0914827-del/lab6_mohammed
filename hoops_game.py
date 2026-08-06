@@ -22,3 +22,34 @@ class HoopPlayer:
 if __name__ == "__main__":
     player1 = HoopPlayer("LeBron", 90)
     player1.show_stats()
+
+class PowerForward(HoopPlayer):
+    def __init__(self, name, shooting_power, post_power):
+        # Call the parent class (HoopPlayer) constructor
+        super().__init__(name, shooting_power)
+        self.post_power = post_power  # Extra detail for Kind 1!
+
+    def post_move(self, opponent):
+        """Special Move: Uses heavy energy to guarantee big points inside."""
+        if self.energy >= 30:
+            self.energy -= 30
+            points_scored = 4
+            self.points += points_scored
+            self.keep_energy_in_range()
+            print(f"💪 {self.name} uses BULLY BALL on {opponent.name}!")
+            print(f"Scored {points_scored} points! Remaining energy: {self.energy}%\n")
+        else:
+            print(f"❌ {self.name} is too tired to execute a post move!\n")
+
+# --- TEST YOUR CLASS HERE ---
+if __name__ == "__main__":
+    # Create two players to test the move
+    pf = PowerForward("Giannis", 80, 95)
+    defender = HoopPlayer("Defender", 70)
+
+    # Show initial stats
+    pf.show_stats()
+
+    # Test the special move!
+    pf.post_move(defender)
+    pf.show_stats()
