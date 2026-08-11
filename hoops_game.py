@@ -1,3 +1,5 @@
+import random
+
 class HoopPlayer:
     def __init__(self, name, shooting_power):
         self.name = name
@@ -18,10 +20,7 @@ class HoopPlayer:
         print(f"Points: {self.points} | Energy: {self.energy}%\n")
 
 
-# --- TEST YOUR CLASS HERE ---
-if __name__ == "__main__":
-    player1 = HoopPlayer("LeBron", 90)
-    player1.show_stats()
+# (Removed inline test; tests consolidated at bottom)
 
 class PowerForward(HoopPlayer):
     def __init__(self, name, shooting_power, post_power):
@@ -58,19 +57,45 @@ class PointGuard(HoopPlayer):
             print(f"Scored {points_scored} points! Remaining energy: {self.energy}%\n")
         else:
             print(f"❌ {self.name} is too winded to pull off a crossover!\n")
-# --- TEST YOUR CLASS HERE ---
-if __name__ == "__main__":
-    # Create two players to test the move
-    pf = PowerForward("Giannis", 80, 95)
-    pg = PointGuard("Luka", 85, 90)
-    defender = HoopPlayer("Defender", 70)
+class BasketballCourt:
+    def __init__(self):
+        # Lineup of 4 players (2 Power Forwards, 2 Point Guards)
+        self.lineup = [
+            PowerForward("Giannis", 80, 95),
+            PowerForward("LeBron", 88, 90),
+            PointGuard("Curry", 95, 99),
+            PointGuard("Kyrie", 92, 98)
+        ]
+        self.user_player = None
+        self.cpu_player = None
 
-    # Show initial stats
-    pf.show_stats()
+    def display_lineup(self):
+        """Prints all players available to pick."""
+        print("\n====== 🏀 1-ON-1 HOOPS ROSTER 🏀 ======")
+        for index, player in enumerate(self.lineup, start=1):
+            player_type = type(player).__name__
+            print(f"{index}. {player.name} ({player_type}) - Shooting: {player.shooting_power}")
+        print("=======================================\n")
 
-    # Test the special move!
-    pf.post_move(defender)
-    pf.show_stats()
+    def select_players(self):
+        """Lets the user pick a player and picks a random CPU opponent."""
+        self.display_lineup()
+        
+        # User selection logic
+        try:
+            choice = int(input("Pick your player number (1-4): ")) - 1
+            if choice < 0 or choice >= len(self.lineup):
+                raise ValueError
+        except ValueError:
+            print("Invalid selection. Defaulting to player 1.")
+            choice = 0
+        self.user_player = self.lineup[choice]
+        
+        # CPU selection logic (picks anyone left on roster)
+        available_opponents = [p for p in self.lineup if p is not self.user_player]
+        self.cpu_player = random.choice(available_opponents)
+
+        print(f"🔥 MATCHUP SET: {self.user_player.name} VS {self.cpu_player.name}! 🔥\n")
     # --- TEST YOUR CLASSES HERE ---
 if __name__ == "__main__":
     pf = PowerForward("Giannis", 80, 95)
@@ -87,3 +112,6 @@ if __name__ == "__main__":
     print("--- POST-MOVE STATS ---")
     pf.show_stats()
     pg.show_stats()
+if __name__ == "__main__":
+    court = BasketballCourt()
+    court.select_players()
