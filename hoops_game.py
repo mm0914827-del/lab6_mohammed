@@ -40,11 +40,29 @@ class PowerForward(HoopPlayer):
             print(f"Scored {points_scored} points! Remaining energy: {self.energy}%\n")
         else:
             print(f"❌ {self.name} is too tired to execute a post move!\n")
+class PointGuard(HoopPlayer):
+    def __init__(self, name, shooting_power, speed):
+        # Inherit parent attributes
+        super().__init__(name, shooting_power)
+        self.speed = speed  # Extra detail for Kind 2!
 
+    def crossover_drive(self, opponent):
+        """Special Move: Uses low energy for a fast 2-point layup."""
+        energy_cost = 15
+        if self.energy >= energy_cost:
+            self.energy -= energy_cost
+            points_scored = 2
+            self.points += points_scored
+            self.keep_energy_in_range()
+            print(f"⚡ {self.name} blows past {opponent.name} with a CROSSOVER & DRIVE!")
+            print(f"Scored {points_scored} points! Remaining energy: {self.energy}%\n")
+        else:
+            print(f"❌ {self.name} is too winded to pull off a crossover!\n")
 # --- TEST YOUR CLASS HERE ---
 if __name__ == "__main__":
     # Create two players to test the move
     pf = PowerForward("Giannis", 80, 95)
+    pg = PointGuard("Luka", 85, 90)
     defender = HoopPlayer("Defender", 70)
 
     # Show initial stats
@@ -53,3 +71,19 @@ if __name__ == "__main__":
     # Test the special move!
     pf.post_move(defender)
     pf.show_stats()
+    # --- TEST YOUR CLASSES HERE ---
+if __name__ == "__main__":
+    pf = PowerForward("Giannis", 80, 95)
+    pg = PointGuard("Curry", 95, 99)
+
+    print("--- PRE-GAME STATS ---")
+    pf.show_stats()
+    pg.show_stats()
+
+    print("--- SPECIAL MOVES TEST ---")
+    pf.post_move(pg)
+    pg.crossover_drive(pf)
+
+    print("--- POST-MOVE STATS ---")
+    pf.show_stats()
+    pg.show_stats()
