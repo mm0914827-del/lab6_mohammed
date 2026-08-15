@@ -39,6 +39,12 @@ class HoopPlayer:
         print(f"--- {self.name} ---")
         print(f"Points: {self.points} | Energy: {self.energy}%\n")
 
+    def rest(self):
+        """Recover energy without exceeding the valid range."""
+        self.energy += 20
+        self.keep_energy_in_range()
+        print(f"🔋 {self.name} rested and restored energy to {self.energy}%!\n")
+
 
 # (Removed inline test; tests consolidated at bottom)
 
@@ -101,13 +107,15 @@ class BasketballCourt:
         """Lets the user pick a player and picks a random CPU opponent."""
         self.display_lineup()
 
-        try:
-            choice = int(input("Pick your player number (1-4): ")) - 1
-            if choice < 0 or choice >= len(self.lineup):
-                raise ValueError
-        except ValueError:
-            print("Invalid selection. Defaulting to player 1.")
-            choice = 0
+        while True:
+            try:
+                choice = int(input("Pick your player number (1-4): "))
+                if 1 <= choice <= len(self.lineup):
+                    choice -= 1
+                    break
+                print("Invalid selection. Please choose a number from 1 to 4.")
+            except ValueError:
+                print("Invalid selection. Please enter a valid number.")
 
         self.user_player = self.lineup[choice]
 
@@ -116,6 +124,36 @@ class BasketballCourt:
         self.cpu_player = random.choice(available_opponents)
 
         print(f"🔥 MATCHUP SET: {self.user_player.name} VS {self.cpu_player.name}! 🔥\n")
+
+    def start_game(self):
+        """Runs the main game loop until a player reaches 10 points."""
+        self.select_players()
+
+        target_score = 10
+        round_num = 1
+
+        while self.user_player.points < target_score and self.cpu_player.points < target_score:
+            print(f"================ ROUND {round_num} ================")
+            print(f"Score: {self.user_player.name} ({self.user_player.points}) | {self.cpu_player.name} ({self.cpu_player.points})")
+            print("=========================================\n")
+
+            # User Turn
+            self.play_turn(self.user_player, self.cpu_player)
+            if self.cpu_player.points >= target_score or self.user_player.points >= target_score:
+                break
+
+            # CPU Turn
+            self.play_turn(self.cpu_player, self.user_player)
+            round_num += 1
+
+        # Victory Determination (Day 6)
+        print("================ GAME OVER ================")
+        print(f"FINAL SCORE: {self.user_player.name} ({self.user_player.points}) - {self.cpu_player.name} ({self.cpu_player.points})")
+
+        if self.user_player.points >= target_score:
+            print(f"🏆 CONGRATULATIONS! You won with {self.user_player.name}! 🏆\n")
+        else:
+            print(f"💥 {self.cpu_player.name} takes the victory! Better luck next time.\n")
 
     def play_turn(self, attacker, defender):
         """Executes a single turn for either the user or CPU."""
@@ -135,9 +173,10 @@ class BasketballCourt:
                     attacker.post_move(defender)
                 elif isinstance(attacker, PointGuard):
                     attacker.crossover_drive(defender)
+                else:
+                    print("Invalid special move for this player.\n")
             elif choice == "3":
-                attacker.energy = min(100, attacker.energy + 20)
-                print(f"🔋 {attacker.name} rested and restored energy to {attacker.energy}%!\n")
+                attacker.rest()
             else:
                 print("Invalid choice! Turn skipped.\n")
 
@@ -156,26 +195,10 @@ class BasketballCourt:
                 elif isinstance(attacker, PointGuard):
                     attacker.crossover_drive(defender)
             else:
-                attacker.energy = min(100, attacker.energy + 20)
-                print(f"🔋 {attacker.name} rested and restored energy to {attacker.energy}%!\n")
+                attacker.rest()
 
 
 # --- TEST YOUR CLASSES HERE ---
 if __name__ == "__main__":
-    pf = PowerForward("Giannis", 80, 95)
-    pg = PointGuard("Curry", 95, 99)
-
-    print("--- PRE-GAME STATS ---")
-    pf.show_stats()
-    pg.show_stats()
-
-    print("--- SPECIAL MOVES TEST ---")
-    pf.post_move(pg)
-    pg.crossover_drive(pf)
-
-    print("--- POST-MOVE STATS ---")
-    pf.show_stats()
-    pg.show_stats()
-
     court = BasketballCourt()
-    court.select_players()
+    court.start_game()
