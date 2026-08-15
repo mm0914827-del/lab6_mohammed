@@ -14,6 +14,26 @@ class HoopPlayer:
         elif self.energy > 100:
             self.energy = 100
 
+    def shoot_ball(self, defender):
+        """Basic jump shot: uses energy and can score 2 or 3 points."""
+        energy_cost = 10
+        if self.energy < energy_cost:
+            print(f"❌ {self.name} is too tired to shoot!\n")
+            return
+
+        self.energy -= energy_cost
+        accuracy = random.randint(1, 100)
+
+        if accuracy <= self.shooting_power:
+            points_scored = 3 if accuracy >= 85 else 2
+            self.points += points_scored
+            print(f"🏀 {self.name} hits a jump shot for {points_scored} points!")
+        else:
+            print(f"🚫 {self.name} misses the shot.")
+
+        self.keep_energy_in_range()
+        print(f"Remaining energy: {self.energy}%\n")
+
     def show_stats(self):
         """Prints current player stats."""
         print(f"--- {self.name} ---")
@@ -80,8 +100,7 @@ class BasketballCourt:
     def select_players(self):
         """Lets the user pick a player and picks a random CPU opponent."""
         self.display_lineup()
-        
-        # User selection logic
+
         try:
             choice = int(input("Pick your player number (1-4): ")) - 1
             if choice < 0 or choice >= len(self.lineup):
@@ -89,14 +108,59 @@ class BasketballCourt:
         except ValueError:
             print("Invalid selection. Defaulting to player 1.")
             choice = 0
+
         self.user_player = self.lineup[choice]
-        
+
         # CPU selection logic (picks anyone left on roster)
         available_opponents = [p for p in self.lineup if p is not self.user_player]
         self.cpu_player = random.choice(available_opponents)
 
         print(f"🔥 MATCHUP SET: {self.user_player.name} VS {self.cpu_player.name}! 🔥\n")
-    # --- TEST YOUR CLASSES HERE ---
+
+    def play_turn(self, attacker, defender):
+        """Executes a single turn for either the user or CPU."""
+        print(f"--- 🏀 {attacker.name}'s Turn ---")
+
+        # If it's the User's turn, show the action menu
+        if attacker == self.user_player:
+            print("1. Jump Shot (Basic Attack)")
+            print("2. Special Move")
+            print("3. Rest (Recover +20 Energy)")
+            choice = input("Choose an action (1-3): ")
+
+            if choice == "1":
+                attacker.shoot_ball(defender)
+            elif choice == "2":
+                if isinstance(attacker, PowerForward):
+                    attacker.post_move(defender)
+                elif isinstance(attacker, PointGuard):
+                    attacker.crossover_drive(defender)
+            elif choice == "3":
+                attacker.energy = min(100, attacker.energy + 20)
+                print(f"🔋 {attacker.name} rested and restored energy to {attacker.energy}%!\n")
+            else:
+                print("Invalid choice! Turn skipped.\n")
+
+        # If it's the CPU's turn, pick randomly based on energy
+        else:
+            if attacker.energy >= 30:
+                action = random.choice(["shoot", "special"])
+            else:
+                action = random.choice(["shoot", "rest"])
+
+            if action == "shoot":
+                attacker.shoot_ball(defender)
+            elif action == "special":
+                if isinstance(attacker, PowerForward):
+                    attacker.post_move(defender)
+                elif isinstance(attacker, PointGuard):
+                    attacker.crossover_drive(defender)
+            else:
+                attacker.energy = min(100, attacker.energy + 20)
+                print(f"🔋 {attacker.name} rested and restored energy to {attacker.energy}%!\n")
+
+
+# --- TEST YOUR CLASSES HERE ---
 if __name__ == "__main__":
     pf = PowerForward("Giannis", 80, 95)
     pg = PointGuard("Curry", 95, 99)
@@ -112,6 +176,6 @@ if __name__ == "__main__":
     print("--- POST-MOVE STATS ---")
     pf.show_stats()
     pg.show_stats()
-if __name__ == "__main__":
+
     court = BasketballCourt()
     court.select_players()
